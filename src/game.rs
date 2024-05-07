@@ -41,11 +41,19 @@ impl Game {
     }
 
     fn play(&mut self) {
-        while self.choice != "exit" && self.choice != "stand" {
+        for _ in 0..2 {
             let random_card = self.get_card();
-            println!("Card: {:?} of {:?}", random_card.rank, random_card.suit);
+            self.house_cards.push(random_card.clone());
+            self.house_sum += random_card.rank.value();
+        }
+
+        while self.choice != "exit" && self.choice != "stand" {
+            print!("\x1B[2J\x1B[1;1H");
+            let random_card = self.get_card();
+            // println!("Card: {:?} of {:?}", random_card.rank, random_card.suit);
             self.user_cards.push(random_card.clone());
             self.user_sum += random_card.rank.value();
+            self.display_cards(false);
             if self.user_sum > 21 {
                 let message = format!("You lose! Your total sum is: {}", self.user_sum);
                 end_program_error(&message);
@@ -62,6 +70,9 @@ impl Game {
                 self.house_cards.push(random_card.clone());
                 self.house_sum += random_card.rank.value(); 
             }
+
+            print!("\x1B[2J\x1B[1;1H");
+            self.display_cards(true);
 
             if self.house_sum > 21 {
                 let message = format!("You win! Your sum is {}. House total sum is: {}", self.user_sum, self.house_sum);
@@ -95,24 +106,28 @@ impl Game {
 
         self.all_cards.remove(random_index);
 
-        println!("Random card: {:?} of {:?}", random_card.rank, random_card.suit);
+        // println!("Random card: {:?} of {:?}", random_card.rank, random_card.suit);
         random_card.clone()
     }
+
+    /* Displays the house's and the user's cards */
+    fn display_cards(&self, show_cards: bool) {
+        println!("House cards:");
+        for (i, card) in self.house_cards.iter().enumerate() {
+            if i==0 && !show_cards {
+                println!("<Face down card>");
+                continue;
+            }
+
+            println!("{:?} of {:?}", card.rank, card.suit);
+        }
+
+        println!("User cards:");
+        for card in &self.user_cards {
+            println!("{:?} of {:?}", card.rank, card.suit);
+        }
+    }
 }
-
-// pub fn test_game() {
-//     let game = Game::create_decks();
-//     // for deck in game.decks {
-//     //     println!("New deck");
-//     //     for card in deck.deck {
-//     //         println!("{:?} of {:?}", card.rank, card.suit);
-//     //     }
-//     // }
-
-//     for card in game.all_cards {
-//         println!("{:?} of {:?}, Value: {:?}", card.rank, card.suit, card.rank.value());
-//     }
-// }
 
 pub fn setup() {
     let mut game = Game::create_decks();
